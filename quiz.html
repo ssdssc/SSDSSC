@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Team Registration and Quiz Signup</title>
+
+  <!-- Icons + Font -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg-dark: #0f0f12;
+      --panel: #1a1b20;
+      --panel-2: #20222a;
+      --text: #e8e8ef;
+      --muted: #a7a7bb;
+
+      --purple-300: #c084fc;
+      --purple-400: #a855f7;
+      --purple-500: #9333ea;
+      --purple-600: #7e22ce;
+      --purple-700: #6b21a8;
+
+      --red-500: #ef4444;
+      --gray-500: #6b7280;
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 12px 30px rgba(0,0,0,0.45);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body{
+      font-family: 'Poppins', sans-serif;
+      color: var(--text);
+      background: radial-gradient(1000px 600px at 10% -10%, rgba(147,51,234,0.25), transparent 60%),
+                  radial-gradient(900px 600px at 100% 0%, rgba(168,85,247,0.18), transparent 60%),
+                  var(--bg-dark);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+
+    .card{
+      width: 100%;
+      max-width: 760px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)) , var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .title{
+      text-align: center;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      font-size: 1.75rem;
+      margin: 4px 0 22px;
+    }
+
+    /* Glassy info blocks */
+    .glass{
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(147,51,234,0.45);
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 0 0 1px rgba(147,51,234,0.12) inset, 0 10px 30px rgba(147,51,234,0.08);
+    }
+    .glass.filled{
+      border-color: rgba(147,51,234,0.8);
+      box-shadow: 0 0 0 1px rgba(147,51,234,0.25) inset, 0 10px 30px rgba(147,51,234,0.18);
+    }
+
+    .glass h3{ margin: 0 0 8px; font-size: 1rem; }
+    .glass ul{ margin: 0 0 0 1.1rem; padding: 0; color: var(--muted); }
+    .glass li{ line-height: 1.6; }
+
+    /* Form layout */
+    form{ display: grid; gap: 14px; }
+    .field{
+      display: grid; gap: 8px;
+    }
+    label{
+      color: #cfcfe8;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    .input{
+      width: 100%;
+      padding: 12px 14px;
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .input::placeholder{ color: #8c8ca1; }
+    .input:focus{
+      border-color: var(--purple-500);
+      box-shadow: 0 0 0 4px rgba(147,51,234,0.18);
+      background: #23252e;
+    }
+
+    .muted{ color: var(--muted); font-size: 0.9rem; }
+
+    /* Members area */
+    .members-hint{
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .warning{ color: var(--red-500); font-size: 0.85rem; margin-top: 6px; display: none; }
+
+    .member-row{
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .phone-btn, .save-btn{
+      border: 0; cursor: pointer; border-radius: 10px;
+      padding: 10px 12px; display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(147,51,234,0.12);
+      color: var(--text);
+      transition: background .2s, transform .05s;
+    }
+    .phone-btn:hover, .save-btn:hover{ background: rgba(147,51,234,0.18); }
+    .phone-btn:active, .save-btn:active{ transform: translateY(1px); }
+
+    /* Buttons */
+    .btn{
+      border: 0; cursor: pointer; border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 600;
+      color: white;
+      transition: transform .05s, box-shadow .2s, background .2s;
+      background: linear-gradient(180deg, var(--purple-500), var(--purple-700));
+      box-shadow: 0 10px 25px rgba(147,51,234,0.35);
+      width: 100%;
+    }
+    .btn:hover{
+      background: linear-gradient(180deg, var(--purple-400), var(--purple-600));
+      box-shadow: 0 12px 28px rgba(147,51,234,0.42);
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn-ghost{
+      background: rgba(147,51,234,0.15);
+      color: var(--text);
+      box-shadow: none;
+    }
+    .btn-ghost:hover{ background: rgba(147,51,234,0.25); }
+
+    /* Links styled like buttons */
+    .linkbtn{
+      display: inline-block; text-align: center; text-decoration: none;
+      border-radius: 12px; padding: 12px 16px; width: 100%;
+      color: white;
+      background: linear-gradient(180deg, var(--purple-500), var(--purple-700));
+      box-shadow: 0 10px 25px rgba(147,51,234,0.35);
+      transition: box-shadow .2s, background .2s, transform .05s;
+    }
+    .linkbtn:hover{
+      background: linear-gradient(180deg, var(--purple-400), var(--purple-600));
+      box-shadow: 0 12px 28px rgba(147,51,234,0.42);
+    }
+    .linkrow{ display: grid; gap: 10px; }
+
+    /* Checkbox */
+    .checkrow{
+      display: flex; align-items: center; gap: 10px;
+      color: #cfcfe8; font-size: 0.95rem;
+    }
+    input[type="checkbox"]{
+      width: 18px; height: 18px;
+      accent-color: var(--purple-500);
+    }
+
+    /* Popup */
+    .overlay{
+      position: fixed; inset: 0;
+      display: none; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.8); z-index: 50;
+      padding: 16px;
+    }
+    .overlay.show{ display: flex; }
+    .popup{
+      background: white; color: #111;
+      border-radius: 12px; padding: 18px;
+      width: 100%; max-width: 420px; text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .popup .ok{
+      margin-top: 10px;
+      background: linear-gradient(180deg, var(--purple-500), var(--purple-700));
+      color: white; border: 0; border-radius: 10px; padding: 10px 14px;
+      cursor: pointer;
+    }
+
+    /* Spinner */
+    .spinner{
+      display: none; justify-content: center; padding-top: 6px; margin-bottom: 8px;
+    }
+    .spin{
+      animation: spin 1s linear infinite;
+      font-size: 36px; color: var(--purple-400);
+    }
+    @keyframes spin { to{ transform: rotate(360deg); } }
+
+    /* Footer */
+    .footer{
+      margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 8px;
+      color: #f0f0ff;
+    }
+    .footer img{ width: 24px; height: 24px; border-radius: 6px; }
+
+    /* Responsive */
+    @media (max-width: 640px){
+      .card{ padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 class="title">Team Registration and Quiz Signup</h2>
+
+    <!-- Instructions -->
+    <div class="glass" id="instructions">
+      <h3>Instructions</h3>
+      <ul>
+        <li>Specify the <strong>number of team members including the team leader</strong> (up to 5).</li>
+        <li>Click the phone icon to add their <strong>contact numbers</strong>.</li>
+        <li>Provide a Gmail and password for the quiz signup (use a <strong>new</strong> password).</li>
+        <li>Optionally save credentials as a PDF.</li>
+      </ul>
+    </div>
+
+    <form id="dataForm" novalidate>
+      <!-- Basic Information -->
+      <div class="field">
+        <label for="schoolAddress">School Address</label>
+        <input class="input" type="text" id="schoolAddress" name="schoolAddress" placeholder="Enter school address" required>
+      </div>
+
+      <div class="field">
+        <label for="societyName">Society Name</label>
+        <input class="input" type="text" id="societyName" name="societyName" placeholder="Enter society name" required>
+      </div>
+
+      <div class="field">
+        <label for="societyEmail">Society Email Address</label>
+        <input class="input" type="email" id="societyEmail" name="societyEmail" placeholder="Enter society email address" required>
+      </div>
+
+      <div class="field">
+        <label for="teacherName">Name of Teacher In-Charge</label>
+        <input class="input" type="text" id="teacherName" name="teacherName" placeholder="Enter teacher in-charge name" required>
+      </div>
+
+      <div class="field">
+        <label for="teacherContact">Contact Number of Teacher In-Charge</label>
+        <input class="input" type="tel" id="teacherContact" name="teacherContact" placeholder="Enter teacher's contact number" inputmode="tel" pattern="[0-9+\-() ]{7,}" required>
+      </div>
+
+      <!-- Team Information -->
+      <div class="field">
+        <label for="presidentName">President's Name</label>
+        <input class="input" type="text" id="presidentName" name="presidentName" placeholder="Enter president's name" required>
+      </div>
+
+      <div class="field">
+        <label for="presidentContact">President's Contact Number</label>
+        <input class="input" type="tel" id="presidentContact" name="presidentContact" placeholder="Enter president's contact number" inputmode="tel" pattern="[0-9+\-() ]{7,}" required>
+      </div>
+
+      <div class="field">
+        <label for="teamLeaderName">Team Leader's Name</label>
+        <input class="input" type="text" id="teamLeaderName" name="teamLeaderName" placeholder="Enter team leader's name" required>
+      </div>
+
+      <div class="field">
+        <label for="teamLeaderContact">Team Leader's Contact Number</label>
+        <input class="input" type="tel" id="teamLeaderContact" name="teamLeaderContact" placeholder="Enter team leader's contact number" inputmode="tel" pattern="[0-9+\-() ]{7,}" required>
+      </div>
+
+      <!-- Team Member Information -->
+      <div class="field">
+        <label for="numberOfMembers">Number of Team Members including the team leader</label>
+        <input class="input" type="number" id="numberOfMembers" name="numberOfMembers" placeholder="Enter number of members (1-5)" required max="5" min="1">
+        <div id="warningMessage" class="warning">The maximum number of team members is 5.</div>
+      </div>
+
+      <div class="glass" style="margin-top:8px;">
+        <p class="muted">
+          <strong style="color:var(--text)">Instruction:</strong>
+          After setting the member count, click the
+          <i class="bx bx-phone" style="font-size:1.2rem;color:var(--purple-300);vertical-align:-2px;"></i>
+          next to each name to add a contact number, then press <strong>Save</strong>.
+        </p>
+      </div>
+
+      <div id="teamMemberFields" style="display:grid; gap:10px;"></div>
+
+      <!-- Quiz Signup -->
+      <h3 style="margin:14px 0 6px;">Quiz Signup</h3>
+      <div id="quizNoteCredentials" class="glass" style="margin:6px 0 2px;">
+        <p class="muted">
+          <strong style="color:var(--text)">Note:</strong> These credentials will be used to log in on competition day.
+          Use a <strong>new password</strong>; don’t reuse personal passwords.
+        </p>
+      </div>
+
+      <div class="field">
+        <label for="gmail">Enter Gmail</label>
+        <input class="input" type="email" id="gmail" name="gmail" placeholder="teamname@gmail.com" required pattern="^[^@\s]+@gmail\.com$">
+        <small class="muted">Use an address like <em>teamname@gmail.com</em></small>
+      </div>
+
+      <div class="field">
+        <label for="password">Create a Password</label>
+        <input class="input" type="password" id="password" name="password" placeholder="Enter password" minlength="6" required>
+      </div>
+
+      <button type="button" id="savePdf" class="btn">Save Credentials as a PDF</button>
+
+      <div class="checkrow">
+        <input type="checkbox" id="termsCheckbox" required>
+        <label for="termsCheckbox">I Agree to All Terms and Conditions</label>
+      </div>
+
+      <!-- Links -->
+      <div class="linkrow">
+        <a href="https://chat.whatsapp.com/LMw4C44i172BcHjn4dQqmQ" target="_blank" rel="noopener noreferrer" class="linkbtn">Join WhatsApp Group</a>
+        <a href="https://drive.google.com/drive/folders/1-8DEROA0i5AbIqxHncv_573lyjxwudqa" target="_blank" rel="noopener noreferrer" class="linkbtn">Open Rules and Regulations</a>
+      </div>
+
+      <button type="submit" class="btn">Submit</button>
+    </form>
+
+    <!-- Popup -->
+    <div id="popupOverlay" class="overlay">
+      <div class="popup">
+        <p id="popupMessage" style="font-weight:700; font-size:1.05rem; margin:0 0 10px;"></p>
+        <button id="popupButton" class="ok">OK</button>
+      </div>
+    </div>
+
+    <!-- Spinner -->
+    <div id="loadingSpinner" class="spinner">
+      <i class="bx bx-loader-alt spin"></i>
+    </div>
+
+    <div class="footer">
+      <span class="muted" style="color:#f0e7ff;">Solution by Ocular</span>
+      <img src="https://imgur.com/JJKGfJJ.jpeg" alt="Ocular Logo">
+    </div>
+  </div>
+
+<script>
+  const maxMembers = 5;
+  const numberOfMembersInput = document.getElementById('numberOfMembers');
+  const warningMessage = document.getElementById('warningMessage');
+  const teamMemberFields = document.getElementById('teamMemberFields');
+
+  numberOfMembersInput.addEventListener('input', function () {
+    let numMembers = parseInt(this.value, 10);
+
+    if (numMembers > maxMembers) {
+      warningMessage.style.display = 'block';
+      this.value = maxMembers;
+      numMembers = maxMembers;
+    } else if (numMembers < 1 || isNaN(numMembers)) {
+      teamMemberFields.innerHTML = '';
+      warningMessage.style.display = 'none';
+      return;
+    } else {
+      warningMessage.style.display = 'none';
+    }
+
+    teamMemberFields.innerHTML = '';
+
+    for (let i = 1; i <= numMembers; i++) {
+      const row = document.createElement('div');
+      row.className = 'member-row';
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.id = `memberName${i}`;
+      nameInput.name = `memberName${i}`;
+      nameInput.placeholder = `Enter name for member ${i}`;
+      nameInput.required = true;
+      nameInput.className = 'input';
+      nameInput.style.flex = '1 1 320px';
+
+      const hiddenPhone = document.createElement('input');
+      hiddenPhone.type = 'hidden';
+      hiddenPhone.id = `memberPhone${i}`;
+      hiddenPhone.name = `memberPhone${i}`;
+
+      const callBtn = document.createElement('button');
+      callBtn.type = 'button';
+      callBtn.className = 'phone-btn';
+      callBtn.innerHTML = '<i class="bx bx-phone"></i><span>Add phone</span>';
+
+      callBtn.addEventListener('click', function () {
+        const phoneInput = document.createElement('input');
+        phoneInput.type = 'tel';
+        phoneInput.placeholder = `Phone number for member ${i}`;
+        phoneInput.inputMode = 'tel';
+        phoneInput.pattern = '[0-9+\\-() ]{7,}';
+        phoneInput.className = 'input';
+        phoneInput.style.flex = '1 1 260px';
+
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.className = 'save-btn';
+        saveBtn.textContent = 'Save';
+
+        saveBtn.addEventListener('click', function () {
+          const name = nameInput.value.trim();
+          const phone = phoneInput.value.trim();
+          if (!name) { alert("Please enter the member's name first."); return; }
+          if (!phone) { alert('Please enter a valid phone number.'); return; }
+          hiddenPhone.value = phone;
+          nameInput.value = `${name} (📞 saved)`;
+          phoneInput.remove();
+          saveBtn.remove();
+          callBtn.remove();
+        });
+
+        row.insertBefore(phoneInput, callBtn);
+        row.insertBefore(saveBtn, callBtn.nextSibling);
+      });
+
+      row.appendChild(nameInput);
+      row.appendChild(hiddenPhone);
+      row.appendChild(callBtn);
+      teamMemberFields.appendChild(row);
+    }
+  });
+
+  // Note highlight when credentials are filled
+  document.getElementById('gmail').addEventListener('input', updateNote);
+  document.getElementById('password').addEventListener('input', updateNote);
+  function updateNote(){
+    const gmail = document.getElementById('gmail').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const note = document.getElementById('quizNoteCredentials');
+    if (gmail && password) note.classList.add('filled');
+    else note.classList.remove('filled');
+  }
+
+  // Save credentials as PDF (with warning)
+  document.getElementById('savePdf').addEventListener('click', function () {
+    const gmail = document.getElementById('gmail')?.value.trim();
+    const password = document.getElementById('password')?.value.trim();
+    if (!gmail || !password) { alert('Please fill in both Gmail and password.'); return; }
+    if (!/^[^@\s]+@gmail\.com$/.test(gmail)) { alert('Please use a valid @gmail.com address.'); return; }
+    if (!confirm('Saving credentials as a PDF will store the password in plain text. Continue?')) return;
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text('Quiz Signup Credentials', 10, 10);
+    doc.text(`Gmail: ${gmail}`, 10, 20);
+    doc.text(`Password: ${password}`, 10, 30);
+    doc.save('Quiz_Credentials.pdf');
+  });
+
+  // Popup helpers
+  const popupOverlay = document.getElementById('popupOverlay');
+  const popupMessage = document.getElementById('popupMessage');
+  const popupButton = document.getElementById('popupButton');
+
+  function showPopupMessage(message){
+    popupMessage.textContent = message;
+    popupOverlay.classList.add('show');
+    popupButton.onclick = () => popupOverlay.classList.remove('show');
+  }
+
+  // Submit to Google Sheets (Apps Script)
+  document.getElementById('dataForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const terms = document.getElementById('termsCheckbox');
+    if (!terms.checked) { alert('You must agree to the terms and conditions before submitting.'); return; }
+
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    loadingSpinner.style.display = 'flex';
+
+    const schoolAddress = document.getElementById('schoolAddress')?.value.trim();
+    const societyName = document.getElementById('societyName')?.value.trim();
+    const societyEmail = document.getElementById('societyEmail')?.value.trim();
+    const teacherName = document.getElementById('teacherName')?.value.trim();
+    const teacherContact = document.getElementById('teacherContact')?.value.trim();
+    const presidentName = document.getElementById('presidentName')?.value.trim();
+    const presidentContact = document.getElementById('presidentContact')?.value.trim();
+    const teamLeaderName = document.getElementById('teamLeaderName')?.value.trim();
+    const teamLeaderContact = document.getElementById('teamLeaderContact')?.value.trim();
+    const numberOfMembers = parseInt(document.getElementById('numberOfMembers')?.value, 10);
+    const gmail = document.getElementById('gmail')?.value.trim();
+    const password = document.getElementById('password')?.value.trim();
+
+    const teamMembers = [];
+    for (let i = 1; i <= numberOfMembers; i++) {
+      const name = (document.getElementById(`memberName${i}`)?.value || '')
+                    .replace(' (📞 saved)','').trim();
+      const phone = document.getElementById(`memberPhone${i}`)?.value.trim() || '';
+      teamMembers.push(phone ? `${name} (${phone})` : name);
+    }
+
+    try{
+      const resp = await fetch("https://script.google.com/macros/s/AKfycbxT1cIbfmVfU4XsuXl7HeAfZPJRbcf5q8DF9Izhu9mF13Mm1nmniMNo9ptBFJl3HWbiOw/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          schoolAddress,
+          societyName,
+          societyEmail,
+          teacherName,
+          teacherContact,
+          presidentName,
+          presidentContact,
+          teamLeaderName,
+          teamLeaderContact,
+          numberOfMembers,
+          teamMembers: teamMembers.join(", "),
+          gmail,
+          password
+        })
+      });
+      const data = await resp.json();
+      loadingSpinner.style.display = 'none';
+
+      if (data.result === "success") {
+        showPopupMessage("Form submitted successfully!");
+        document.getElementById('dataForm').reset();
+        document.getElementById('teamMemberFields').innerHTML = '';
+        updateNote();
+      } else {
+        showPopupMessage(data.message || "Failed to submit the form. Please try again.");
+      }
+    } catch (err){
+      console.error("Error submitting form:", err);
+      loadingSpinner.style.display = 'none';
+      showPopupMessage("An error occurred. Please try again later.");
+    }
+  });
+</script>
+</body>
+</html>
